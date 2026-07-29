@@ -1,0 +1,6 @@
+matterManufacturer:
+  - id: 'LELLKI/WP35'
+    deviceLabel: 'LELLKI WP35'
+    vendorId: 0x1400
+    productId: 0x03EA
+    deviceProfileName: lellki-wp35

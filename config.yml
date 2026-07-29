@@ -1,0 +1,6 @@
+name: 'LELLKI WP35 Multi-Outlet'
+packageKey: 'lellki-wp35-multi-outlet'
+permissions:
+  matter: {}
+description: 'Dedicated SmartThings Edge driver for LELLKI WP35 (VID 0x1400 / PID 0x03EA)'
+vendorSupportInformation: 'Community driver; not affiliated with LELLKI or Samsung SmartThings'

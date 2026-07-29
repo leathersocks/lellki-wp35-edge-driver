@@ -1,0 +1,42 @@
+name: lellki-wp35
+components:
+  - id: main
+    label: Outlet 1
+    capabilities:
+      - id: switch
+        version: 1
+      - id: refresh
+        version: 1
+    categories:
+      - name: SmartPlug
+  - id: outlet2
+    label: Outlet 2
+    capabilities:
+      - id: switch
+        version: 1
+    categories:
+      - name: SmartPlug
+  - id: outlet3
+    label: Outlet 3
+    capabilities:
+      - id: switch
+        version: 1
+    categories:
+      - name: SmartPlug
+  - id: outlet4
+    label: Outlet 4
+    capabilities:
+      - id: switch
+        version: 1
+    categories:
+      - name: SmartPlug
+  - id: usb
+    label: USB
+    capabilities:
+      - id: switch
+        version: 1
+    categories:
+      - name: SmartPlug
+metadata:
+  deviceType: SmartPlug
+  ocfDeviceType: oic.d.smartplug
