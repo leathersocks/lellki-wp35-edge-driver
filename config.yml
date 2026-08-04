@@ -1,6 +1,6 @@
-name: 'LELLKI WP35 Multi-Outlet'
-packageKey: 'lellki-wp35-multi-outlet'
+name: 'LELLKI WP35 Matter Power Strip Single Card v5'
+packageKey: 'x2pu.lellki.wp35.matter.single-card.v5'
 permissions:
   matter: {}
-description: 'Dedicated SmartThings Edge driver for LELLKI WP35 (VID 0x1400 / PID 0x03EA)'
-vendorSupportInformation: 'Community driver; not affiliated with LELLKI or Samsung SmartThings'
+description: 'Single-card Matter Edge driver for the LELLKI WP35. Maps endpoints 1-5 to five switch components on one SmartThings device.'
+vendorSupportInformation: 'Community driver by x2pu; not an official LELLKI or SmartThings driver.'
