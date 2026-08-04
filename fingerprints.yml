@@ -1,6 +1,6 @@
 matterManufacturer:
-  - id: 'LELLKI/WP35'
+  - id: 'LELLKI/LELLKI-WP35-SingleCard-v5'
     deviceLabel: 'LELLKI WP35'
     vendorId: 0x1400
     productId: 0x03EA
-    deviceProfileName: lellki-wp35
+    deviceProfileName: lellki-wp35-single-card-v5
