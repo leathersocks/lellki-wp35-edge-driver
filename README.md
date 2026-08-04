@@ -1,84 +1,97 @@
 # LELLKI WP35 SmartThings Edge Driver
 
-LELLKI WP35 Matter 멀티탭을 SmartThings에서 **하나의 다중 구성요소 장치**로 표시하기 위한 전용 Edge Driver 초안입니다.
+LELLKI WP35 Matter 멀티탭을 SmartThings에서 **하나의 다중 구성요소 장치**로 표시하고, 각 콘센트와 USB 출력을 개별 제어하기 위한 전용 Edge Driver입니다.
 
-## 확인된 기기 정보
+## 지원 기기 정보
 
-- Matter Vendor ID: `5120` (`0x1400`)
-- Matter Product ID: `1002` (`0x03EA`)
-- Firmware 확인값: `1.10`
-- Endpoint 1: 첫 번째 AC 콘센트 (`main`)
-- Endpoint 2: 두 번째 AC 콘센트 (`outlet2`)
-- Endpoint 3: 세 번째 AC 콘센트 (`outlet3`)
-- Endpoint 4: 네 번째 AC 콘센트 (`outlet4`)
-- Endpoint 5: USB 출력 (`usb`)
+* Matter Vendor ID: `5120` (`0x1400`)
+* Matter Product ID: `1002` (`0x03EA`)
+* 확인된 Firmware 버전: `1.10`
 
-## 기대 동작
+### Matter Endpoint 구성
 
-기존 범용 Matter 드라이버는 Endpoint 2~5를 별도 Edge Child 장치로 생성하지만, 이 드라이버는 하나의 WP35 장치 안에 다음 구성요소를 표시하도록 설계했습니다.
+| Endpoint | SmartThings 구성요소 | 실제 출력       |
+| -------: | ---------------- | ----------- |
+|        1 | `main`           | 첫 번째 AC 콘센트 |
+|        2 | `outlet2`        | 두 번째 AC 콘센트 |
+|        3 | `outlet3`        | 세 번째 AC 콘센트 |
+|        4 | `outlet4`        | 네 번째 AC 콘센트 |
+|        5 | `usb`            | USB 출력      |
 
-- Outlet 1
-- Outlet 2
-- Outlet 3
-- Outlet 4
-- USB
+## 주요 기능
+
+기존 범용 Matter 드라이버에서는 Endpoint 2~5가 별도의 Edge Child 장치로 생성될 수 있습니다.
+
+이 드라이버는 LELLKI WP35의 모든 출력을 하나의 SmartThings 장치 안에 다음과 같이 표시합니다.
+
+* Outlet 1
+* Outlet 2
+* Outlet 3
+* Outlet 4
+* USB
 
 각 구성요소의 스위치 명령은 해당 Matter Endpoint로 로컬 전송됩니다.
 
-## 설치
-
-SmartThings CLI가 필요합니다.
-
-```powershell
-smartthings edge:drivers:package .
+```text
+LELLKI WP35
+├─ Outlet 1 → Endpoint 1
+├─ Outlet 2 → Endpoint 2
+├─ Outlet 3 → Endpoint 3
+├─ Outlet 4 → Endpoint 4
+└─ USB      → Endpoint 5
 ```
 
-출력된 Driver ID를 확인한 뒤 개인 채널을 만들거나 기존 채널에 할당합니다.
+### 채널 초대 링크
 
-```powershell
-smartthings edge:channels:create
-smartthings edge:channels:assign
-smartthings edge:drivers:install
-```
+[https://bestow-regional.api.smartthings.com/invite/Kr2zLBpAKpjA](https://bestow-regional.api.smartthings.com/invite/Kr2zLBpAKpjA)
 
-CLI 버전에 따라 인수 형식이 달라질 수 있으므로 각 명령의 도움말을 확인하세요.
+드라이버가 설치된 후 SmartThings 앱에서 WP35를 다시 등록해야 전용 드라이버가 적용됩니다.
 
-```powershell
-smartthings edge:drivers:package --help
-smartthings edge:channels:assign --help
-smartthings edge:drivers:install --help
-```
+## 기존 WP35 장치 전환 방법
 
-## 장치 전환 시 주의사항
+이미 SmartThings에 등록된 WP35는 전용 Edge Driver를 설치하더라도 기존 드라이버에서 자동으로 변경되지 않을 수 있습니다.
 
-Matter 장치는 이미 설치된 드라이버가 자동으로 이 전용 드라이버로 바뀌지 않을 수 있습니다.
+다음 순서로 다시 등록하는 것을 권장합니다.
 
-1. 먼저 이 드라이버를 SmartThings 허브에 설치합니다.
-2. WP35의 현재 장치명과 콘센트별 용도를 기록합니다.
-3. SmartThings에서 WP35를 제거합니다.
-4. WP35를 초기화한 뒤 Matter로 다시 추가합니다.
-5. 새 장치가 `LELLKI WP35` 드라이버를 선택했는지 Advanced Web 또는 CLI에서 확인합니다.
+1. 위 초대 링크를 통해 전용 Edge Driver를 허브에 설치합니다.
+2. 기존 WP35의 장치명과 각 콘센트의 용도를 기록합니다.
+3. WP35에 연결된 SmartThings 루틴을 확인합니다.
+4. SmartThings 앱에서 기존 WP35를 삭제합니다.
+5. WP35를 초기화합니다.
+6. SmartThings 앱에서 `기기 추가`를 선택합니다.
+7. Matter QR 코드 또는 설정 코드를 이용해 WP35를 다시 등록합니다.
+8. 등록된 WP35에서 Outlet 1~4와 USB가 하나의 장치에 표시되는지 확인합니다.
+9. 기존에 사용하던 루틴을 다시 연결합니다.
 
-장치를 제거하면 기존 루틴과 장치 ID가 삭제되므로 루틴을 다시 연결해야 합니다.
+장치를 삭제하면 기존 장치 ID와 연결된 루틴이 삭제될 수 있으므로, 재등록 전에 현재 설정을 기록해 두는 것이 좋습니다.
 
-## 검증할 항목
+## 정상 동작 확인 항목
 
-이 패키지는 제공된 실제 장치 JSON을 기준으로 작성한 **테스트 전 초안**입니다. 설치 후 아래를 확인해야 합니다.
+설치 후 다음 사항을 확인해 주세요.
 
-- 각 구성요소가 올바른 물리 출력과 대응하는지
-- 앱에서 개별 On/Off 명령이 정상인지
-- 물리 버튼 또는 제조사 앱에서 상태가 바뀔 때 SmartThings 상태가 갱신되는지
-- 허브 재부팅 후에도 구독과 상태 갱신이 유지되는지
-- 기존처럼 자식 장치가 추가 생성되지 않는지
+* Outlet 1~4와 USB가 하나의 WP35 장치에 표시되는지
+* 각 구성요소가 실제 콘센트 및 USB 출력과 올바르게 대응하는지
+* SmartThings 앱에서 개별 On/Off 제어가 정상적으로 동작하는지
+* 물리 버튼이나 제조사 앱에서 상태를 변경했을 때 SmartThings 상태가 갱신되는지
+* SmartThings 허브를 재부팅한 후에도 제어와 상태 갱신이 유지되는지
+* 기존 범용 드라이버처럼 별도의 자식 장치가 추가로 생성되지 않는지
 
-로그 확인:
+## 지원 기능
 
-```powershell
-smartthings edge:drivers:logcat
-```
+* Outlet 1 개별 On/Off
+* Outlet 2 개별 On/Off
+* Outlet 3 개별 On/Off
+* Outlet 4 개별 On/Off
+* USB 출력 개별 On/Off
+* 하나의 SmartThings 장치 카드로 통합 표시
+* Matter Endpoint별 로컬 제어
+* 물리 조작에 따른 상태 갱신
+* 허브 재부팅 후 상태 구독 복구
 
-## 제한사항
+## 참고사항
 
-- WP35가 Matter로 공개하지 않는 소비전력, 과부하 보호, 전원 복구 설정, LED 설정은 이 드라이버만으로 추가할 수 없습니다.
-- 현재 장치 JSON에는 각 Endpoint가 표준 Matter On/Off Plug-in Unit으로만 공개되어 있습니다.
-- 이 드라이버는 LELLKI, Uascent, Samsung SmartThings의 공식 지원 드라이버가 아닙니다.
+* 본 드라이버는 LELLKI, Uascent 또는 Samsung SmartThings의 공식 지원 드라이버가 아닙니다.
+* LELLKI WP35 Matter 멀티탭의 확인된 VID, PID 및 Endpoint 구조를 기준으로 제작했습니다.
+* 펌웨어 버전이나 하드웨어 리비전에 따라 동작 차이가 발생할 수 있습니다.
+* 기존에 등록된 WP35는 드라이버 설치 후 삭제하고 다시 등록해야 정상적으로 적용될 수 있습니다.
+* 장치를 다시 등록하면 기존 SmartThings 루틴을 다시 연결해야 할 수 있습니다.
