@@ -3,11 +3,11 @@
 --
 -- Matter Vendor ID:  0x1400 (5120)
 -- Matter Product ID: 0x03EA (1002)
--- Endpoint 1 -> main    (Outlet 1)
--- Endpoint 2 -> switch2 (Outlet 2)
--- Endpoint 3 -> switch3 (Outlet 3)
--- Endpoint 4 -> switch4 (Outlet 4)
--- Endpoint 5 -> switch5 (USB)
+-- Endpoint 1 -> main     (Outlet 1)
+-- Endpoint 2 -> switch2  (Outlet 2)
+-- Endpoint 3 -> switch3  (Outlet 3)
+-- Endpoint 4 -> switch4  (Outlet 4)
+-- Endpoint 5 -> switch5  (USB)
 
 local capabilities = require "st.capabilities"
 local MatterDriver = require "st.matter.driver"
@@ -132,13 +132,13 @@ local function driver_switched(_, device)
   configure_runtime(device, "driverSwitched", true)
 end
 
-local function info_changed(_, device, _, _)
+local function info_changed(_, device, _event, _args)
   -- There are currently no device preferences that require a resubscribe.
   -- Keep the endpoint mapping installed without creating duplicate subscriptions.
   configure_runtime(device, "infoChanged", false)
 end
 
-local function on_off_attribute_handler(_, device, ib, _)
+local function on_off_attribute_handler(_, device, ib, _response)
   local endpoint_id = ib.endpoint_id
   local component_id = ENDPOINT_TO_COMPONENT[endpoint_id]
   local value = ib.data and ib.data.value
@@ -224,7 +224,7 @@ local function handle_switch_off(_, device, command)
   send_switch_command(device, command, false)
 end
 
-local function handle_refresh(_, device, _)
+local function handle_refresh(_, device, _command)
   install_endpoint_mapping(device)
   read_all_endpoints(device)
   device.log.info_with({ hub_logs = true }, "WP35 v5 manual refresh requested")
