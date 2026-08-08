@@ -1,5 +1,5 @@
 name: 'LELLKI WP35 Matter Power Strip Single Card v5'
-packageKey: 'x2pu.lellki.wp35.matter.single-card.v5'
+packageKey: 'lellki-wp35-multi-outlet'
 permissions:
   matter: {}
 description: 'Single-card Matter Edge driver for the LELLKI WP35. Maps endpoints 1-5 to five switch components on one SmartThings device.'
