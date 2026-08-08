@@ -3,11 +3,11 @@
 --
 -- Matter Vendor ID:  0x1400 (5120)
 -- Matter Product ID: 0x03EA (1002)
--- Endpoint 1 -> main
--- Endpoint 2 -> switch2
--- Endpoint 3 -> switch3
--- Endpoint 4 -> switch4
--- Endpoint 5 -> switch5 (USB)
+-- Endpoint 1 -> main     (Outlet 1)
+-- Endpoint 2 -> switch2  (Outlet 2)
+-- Endpoint 3 -> switch3  (Outlet 3)
+-- Endpoint 4 -> switch4  (Outlet 4)
+-- Endpoint 5 -> switch5  (USB)
 
 local capabilities = require "st.capabilities"
 local MatterDriver = require "st.matter.driver"
@@ -31,6 +31,7 @@ local ENDPOINT_TO_COMPONENT = {
 }
 
 local ENDPOINTS = { 1, 2, 3, 4, 5 }
+local RUNTIME_READY_FIELD = "wp35_runtime_ready"
 
 local function component_to_endpoint(_, component_id)
   return COMPONENT_TO_ENDPOINT[component_id] or 1
@@ -55,10 +56,57 @@ local function install_endpoint_mapping(device)
   device:set_endpoint_to_component_fn(endpoint_to_component)
 end
 
-local function subscribe_and_refresh(device, reason)
+local function validate_expected_endpoints(device)
+  local observed = {}
+  local observed_set = {}
+
+  for _, endpoint_id in ipairs(device:get_endpoints(clusters.OnOff.ID) or {}) do
+    table.insert(observed, endpoint_id)
+    observed_set[endpoint_id] = true
+  end
+
+  table.sort(observed)
+
+  local observed_text = {}
+  for _, endpoint_id in ipairs(observed) do
+    table.insert(observed_text, tostring(endpoint_id))
+  end
+
+  device.log.info_with({ hub_logs = true }, string.format(
+    "WP35 v5 OnOff endpoints observed=[%s] expected=[1,2,3,4,5]",
+    table.concat(observed_text, ",")
+  ))
+
+  local missing = {}
+  for _, endpoint_id in ipairs(ENDPOINTS) do
+    if not observed_set[endpoint_id] then
+      table.insert(missing, tostring(endpoint_id))
+    end
+  end
+
+  if #missing > 0 then
+    device.log.warn_with({ hub_logs = true }, string.format(
+      "WP35 v5 expected OnOff endpoint(s) missing=[%s]; firmware or hardware layout may differ",
+      table.concat(missing, ",")
+    ))
+  end
+end
+
+-- Lifecycle events can arrive close together during pairing, driver switching,
+-- and configuration. Configure once per driver runtime to avoid redundant
+-- Matter subscriptions and duplicate initial reads. The field is intentionally
+-- non-persistent so a driver/hub restart subscribes again.
+local function configure_runtime(device, reason, force)
   install_endpoint_mapping(device)
+
+  if not force and device:get_field(RUNTIME_READY_FIELD) then
+    return
+  end
+
+  validate_expected_endpoints(device)
   device:subscribe()
   read_all_endpoints(device)
+  device:set_field(RUNTIME_READY_FIELD, true)
 
   device.log.info_with({ hub_logs = true }, string.format(
     "WP35 v5 configured: reason=%s device=%s",
@@ -67,28 +115,30 @@ local function subscribe_and_refresh(device, reason)
 end
 
 local function device_added(_, device)
-  subscribe_and_refresh(device, "added")
+  configure_runtime(device, "added", false)
 end
 
 local function device_init(_, device)
-  subscribe_and_refresh(device, "init")
+  configure_runtime(device, "init", false)
 end
 
 local function do_configure(_, device)
   device:try_update_metadata({ provisioning_state = "PROVISIONED" })
-  subscribe_and_refresh(device, "doConfigure")
+  configure_runtime(device, "doConfigure", false)
 end
 
 local function driver_switched(_, device)
   device:try_update_metadata({ provisioning_state = "PROVISIONED" })
-  subscribe_and_refresh(device, "driverSwitched")
+  configure_runtime(device, "driverSwitched", true)
 end
 
-local function info_changed(_, device, _, _)
-  subscribe_and_refresh(device, "infoChanged")
+local function info_changed(_, device, _event, _args)
+  -- There are currently no device preferences that require a resubscribe.
+  -- Keep the endpoint mapping installed without creating duplicate subscriptions.
+  configure_runtime(device, "infoChanged", false)
 end
 
-local function on_off_attribute_handler(_, device, ib, _)
+local function on_off_attribute_handler(_, device, ib, _response)
   local endpoint_id = ib.endpoint_id
   local component_id = ENDPOINT_TO_COMPONENT[endpoint_id]
   local value = ib.data and ib.data.value
@@ -174,7 +224,8 @@ local function handle_switch_off(_, device, command)
   send_switch_command(device, command, false)
 end
 
-local function handle_refresh(_, device, _)
+local function handle_refresh(_, device, _command)
+  install_endpoint_mapping(device)
   read_all_endpoints(device)
   device.log.info_with({ hub_logs = true }, "WP35 v5 manual refresh requested")
 end
