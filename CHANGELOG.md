@@ -21,8 +21,8 @@
 - 기존 README에서 표시명과 Component ID가 혼용되던 부분을 수정했습니다.
 - 설치, 기존 장치 재등록, 정상 동작 확인, 문제 해결, logcat, 개발자용 소스 설치 절차를 보강했습니다.
 - 한국어 `README.md`와 별도의 영문 `README.en.md`를 제공하도록 문서 구조를 정리했습니다.
-- Lifecycle 이벤트가 짧은 시간에 연속 발생할 때 `device:subscribe()`와 초기 Endpoint read가 중복 실행되는 것을 줄이기 위해 런타임 초기화를 idempotent하게 정리했습니다.
-- 런타임 필드는 intentionally non-persistent로 유지하여 Hub/Edge Driver 재시작 후에는 Matter subscription이 다시 구성되도록 했습니다.
+- Lifecycle 이벤트가 짧은 시간에 연속 발생할 때 `device:subscribe()`와 초기 Endpoint read가 중복 실행되는 것을 줄이기 위해 런타임 초기화를 멱등적으로 정리했습니다.
+- 런타임 준비 상태 필드는 의도적으로 비영속(non-persistent)으로 유지하여 Hub/Edge Driver 재시작 후에는 Matter subscription이 다시 구성되도록 했습니다.
 - Driver 전환(`driverSwitched`) 시에는 강제로 Endpoint mapping/subscription을 다시 구성하도록 했습니다.
 - 실제 장치에서 발견된 Matter OnOff Endpoint 목록을 시작 시 로그에 출력하도록 진단 기능을 추가했습니다.
 - 예상 Endpoint `1~5` 중 누락된 Endpoint가 있으면 Firmware 또는 하드웨어 구조 차이를 확인할 수 있도록 경고 로그를 추가했습니다.
